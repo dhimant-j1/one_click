@@ -1,0 +1,18 @@
+meta {
+  name: Grant provider access
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/master-admin/provider-access
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "agency_id": 1,
+    "provider_id": 1
+  }
+}

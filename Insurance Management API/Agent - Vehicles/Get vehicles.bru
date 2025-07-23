@@ -1,0 +1,19 @@
+meta {
+  name: Get vehicles
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/agent/vehicles
+  body: none
+  auth: bearer
+}
+
+params:query {
+  ~customer_id: 
+}
+
+auth:bearer {
+  token: {{token}}
+}

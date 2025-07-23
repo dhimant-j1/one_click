@@ -1,0 +1,15 @@
+meta {
+  name: Get available coverages
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/agent/coverages
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}

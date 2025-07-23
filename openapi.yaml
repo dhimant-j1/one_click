@@ -1,0 +1,2335 @@
+openapi: 3.1.3
+info:
+  title: Insurance Management API
+  description: API for managing insurance agencies, providers, users, quotes, and policies
+  version: 1.0.0
+  contact:
+    name: Insurance API Support
+servers:
+  - url: http://localhost:8081/api
+    description: Development server
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    # Enum definitions
+    UserRole:
+      type: string
+      enum:
+        - MasterAdmin
+        - AgencyAdmin
+        - LocationAdmin
+        - Agent
+        - Customer
+
+    QuoteStatus:
+      type: string
+      enum:
+        - Draft
+        - Presented
+        - Bound
+
+    PolicyStatus:
+      type: string
+      enum:
+        - Active
+        - Expired
+        - Cancelled
+
+    # Main entity schemas
+    Agency:
+      type: object
+      required:
+        - agency_name
+      properties:
+        agency_id:
+          type: integer
+          readOnly: true
+        agency_name:
+          type: string
+          maxLength: 255
+        agent_code:
+          type: string
+          maxLength: 255
+          nullable: true
+        additional_data:
+          type: string
+          nullable: true
+
+    InsuranceProvider:
+      type: object
+      required:
+        - provider_name
+        - contact_info
+      properties:
+        provider_id:
+          type: integer
+          readOnly: true
+        provider_name:
+          type: string
+          maxLength: 255
+        contact_info:
+          type: string
+        additional_data:
+          type: string
+          nullable: true
+
+    User:
+      type: object
+      required:
+        - first_name
+        - last_name
+        - email
+        - password_hash
+        - role
+      properties:
+        user_id:
+          type: integer
+          readOnly: true
+        first_name:
+          type: string
+          maxLength: 255
+        last_name:
+          type: string
+          maxLength: 255
+        email:
+          type: string
+          format: email
+          maxLength: 255
+        password_hash:
+          type: string
+          writeOnly: true
+        role:
+          $ref: "#/components/schemas/UserRole"
+        agency_id:
+          type: integer
+          nullable: true
+        location_id:
+          type: integer
+          nullable: true
+        address:
+          type: string
+          nullable: true
+        license_number:
+          type: string
+          maxLength: 255
+          nullable: true
+        license_state:
+          type: string
+          maxLength: 50
+          nullable: true
+        date_of_birth:
+          type: string
+          format: date
+          nullable: true
+        mobile_number:
+          type: string
+          maxLength: 50
+          nullable: true
+        has_physical_impairment:
+          type: boolean
+          nullable: true
+        needs_financial_filing:
+          type: boolean
+          nullable: true
+        additional_data:
+          type: string
+          nullable: true
+
+    Quote:
+      type: object
+      required:
+        - agent_id
+        - customer_id
+        - quote_date
+        - status
+      properties:
+        quote_id:
+          type: integer
+          readOnly: true
+        agent_id:
+          type: integer
+        customer_id:
+          type: integer
+        vehicle_id:
+          type: integer
+          nullable: true
+        quote_date:
+          type: string
+          format: date-time
+        status:
+          $ref: "#/components/schemas/QuoteStatus"
+        additional_data:
+          type: string
+          nullable: true
+
+    Policy:
+      type: object
+      required:
+        - customer_id
+        - provider_id
+        - policy_number
+        - effective_date
+        - expiration_date
+        - status
+      properties:
+        policy_id:
+          type: integer
+          readOnly: true
+        customer_id:
+          type: integer
+        provider_id:
+          type: integer
+        quote_id:
+          type: integer
+          nullable: true
+        policy_number:
+          type: string
+          maxLength: 255
+        effective_date:
+          type: string
+          format: date
+        expiration_date:
+          type: string
+          format: date
+        status:
+          $ref: "#/components/schemas/PolicyStatus"
+        additional_data:
+          type: string
+          nullable: true
+
+    AgencyProviderAccess:
+      type: object
+      required:
+        - agency_id
+        - provider_id
+      properties:
+        agency_id:
+          type: integer
+        provider_id:
+          type: integer
+
+    AgencyLocation:
+      type: object
+      required:
+        - address
+      properties:
+        location_id:
+          type: integer
+          readOnly: true
+        agency_id:
+          type: integer
+        address:
+          type: string
+        additional_data:
+          type: string
+          nullable: true
+
+    Vehicle:
+      type: object
+      required:
+        - customer_id
+        - vin
+      properties:
+        vehicle_id:
+          type: integer
+          readOnly: true
+        customer_id:
+          type: integer
+        vin:
+          type: string
+        make:
+          type: string
+          nullable: true
+        model:
+          type: string
+          nullable: true
+        year:
+          type: integer
+          nullable: true
+        type:
+          type: string
+          nullable: true
+        plate_number:
+          type: string
+          nullable: true
+        plate_type:
+          type: string
+          nullable: true
+        body_style:
+          type: string
+          nullable: true
+        vehicle_use:
+          type: string
+          nullable: true
+        vehicle_history:
+          type: string
+          nullable: true
+        annual_mileage:
+          type: integer
+          nullable: true
+        current_odometer_reading:
+          type: integer
+          nullable: true
+        odometer_reading_date:
+          type: string
+          format: date
+          nullable: true
+        purchased_in_last_90_days:
+          type: boolean
+          nullable: true
+        length_of_ownership:
+          type: string
+          nullable: true
+        ownership_status:
+          type: string
+          nullable: true
+        has_racing_equipment:
+          type: boolean
+          nullable: true
+        has_existing_damage:
+          type: boolean
+          nullable: true
+        cost_new:
+          type: number
+          format: float
+          nullable: true
+        additional_data:
+          type: string
+          nullable: true
+
+    VehicleDriver:
+      type: object
+      required:
+        - vehicle_id
+        - user_id
+      properties:
+        vehicle_id:
+          type: integer
+        user_id:
+          type: integer
+        driver_type:
+          type: string
+          nullable: true
+        relationship_to_insured:
+          type: string
+          nullable: true
+        gender:
+          type: string
+          nullable: true
+        marital_status:
+          type: string
+          nullable: true
+        licensing_exception:
+          type: string
+          nullable: true
+        needs_financial_responsibility_filing:
+          type: boolean
+          nullable: true
+        has_uncompensated_impairment:
+          type: boolean
+          nullable: true
+        mobile_number:
+          type: string
+          nullable: true
+        additional_data:
+          type: string
+          nullable: true
+
+    DrivingHistory:
+      type: object
+      required:
+        - user_id
+      properties:
+        history_id:
+          type: integer
+          readOnly: true
+        user_id:
+          type: integer
+        incident_type:
+          type: string
+          nullable: true
+        incident_date:
+          type: string
+          format: date
+          nullable: true
+        conviction_date:
+          type: string
+          format: date
+          nullable: true
+        amount:
+          type: number
+          format: float
+          nullable: true
+        description:
+          type: string
+          nullable: true
+        additional_data:
+          type: string
+          nullable: true
+
+    InsuranceHistory:
+      type: object
+      required:
+        - user_id
+      properties:
+        history_id:
+          type: integer
+          readOnly: true
+        user_id:
+          type: integer
+        insurance_status:
+          type: string
+          nullable: true
+        current_carrier:
+          type: string
+          nullable: true
+        current_bodily_injury_limits:
+          type: string
+          nullable: true
+        length_with_current_company:
+          type: string
+          nullable: true
+        continuous_insurance:
+          type: boolean
+          nullable: true
+        vehicle_registered_to_other:
+          type: boolean
+          nullable: true
+        driver_without_license:
+          type: boolean
+          nullable: true
+        license_suspended_revoked:
+          type: boolean
+          nullable: true
+        declined_cancelled_non_renewed:
+          type: boolean
+          nullable: true
+        military_deployment:
+          type: boolean
+          nullable: true
+        primary_residence:
+          type: string
+          nullable: true
+        additional_data:
+          type: string
+          nullable: true
+
+    Coverage:
+      type: object
+      required:
+        - coverage_name
+      properties:
+        coverage_id:
+          type: integer
+          readOnly: true
+        coverage_name:
+          type: string
+        description:
+          type: string
+          nullable: true
+        additional_data:
+          type: string
+          nullable: true
+
+    QuoteLineItem:
+      type: object
+      required:
+        - quote_id
+        - provider_id
+        - coverage_id
+        - price
+      properties:
+        line_item_id:
+          type: integer
+          readOnly: true
+        quote_id:
+          type: integer
+        provider_id:
+          type: integer
+        coverage_id:
+          type: integer
+        price:
+          type: number
+          format: float
+        limit_amount:
+          type: string
+          nullable: true
+        deductible_amount:
+          type: string
+          nullable: true
+        additional_data:
+          type: string
+          nullable: true
+
+    QuotesReport:
+      type: object
+      properties:
+        total_quotes:
+          type: integer
+        draft_quotes:
+          type: integer
+        presented_quotes:
+          type: integer
+        bound_quotes:
+          type: integer
+
+    PoliciesReport:
+      type: object
+      properties:
+        total_policies:
+          type: integer
+        active_policies:
+          type: integer
+        expired_policies:
+          type: integer
+        cancelled_policies:
+          type: integer
+
+    AgentReport:
+      type: object
+      properties:
+        agent_id:
+          type: integer
+        customer_count:
+          type: integer
+        quotes:
+          $ref: "#/components/schemas/QuotesReport"
+
+    # Request/Response schemas
+    LoginRequest:
+      type: object
+      required:
+        - email
+        - password
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+
+    LoginResponse:
+      type: object
+      properties:
+        token:
+          type: string
+        user:
+          $ref: "#/components/schemas/User"
+
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+
+    Message:
+      type: object
+      properties:
+        message:
+          type: string
+
+paths:
+  # Authentication routes
+  /auth/login:
+    post:
+      tags:
+        - Authentication
+      summary: User login
+      description: Authenticate user and return JWT token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginRequest"
+      responses:
+        "200":
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LoginResponse"
+        "400":
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "401":
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /auth/reset-password:
+    post:
+      tags:
+        - Authentication
+      summary: Request password reset
+      description: Send password reset email
+      responses:
+        "200":
+          description: Password reset email sent
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Message"
+
+  /auth/reset-password/{token}:
+    put:
+      tags:
+        - Authentication
+      summary: Update password with reset token
+      description: Update user password using reset token
+      parameters:
+        - name: token
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Password updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Message"
+
+  # Master Admin - Agency Management
+  /master-admin/agencies:
+    get:
+      tags:
+        - Master Admin - Agencies
+      summary: Get all agencies
+      description: Retrieve a list of all agencies
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: List of agencies
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Agency"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+    post:
+      tags:
+        - Master Admin - Agencies
+      summary: Create new agency
+      description: Create a new agency
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Agency"
+      responses:
+        "201":
+          description: Agency created successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Message"
+        "400":
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /master-admin/agencies/{id}:
+    put:
+      tags:
+        - Master Admin - Agencies
+      summary: Update agency
+      description: Update an existing agency
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Agency"
+      responses:
+        "200":
+          description: Agency updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Message"
+        "400":
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+    delete:
+      tags:
+        - Master Admin - Agencies
+      summary: Delete agency
+      description: Delete an agency
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Agency deleted successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Message"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  # Master Admin - Provider Management
+  /master-admin/providers:
+    get:
+      tags:
+        - Master Admin - Providers
+      summary: Get all providers
+      description: Retrieve a list of all insurance providers
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: List of providers
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/InsuranceProvider"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+    post:
+      tags:
+        - Master Admin - Providers
+      summary: Create new provider
+      description: Create a new insurance provider
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/InsuranceProvider"
+      responses:
+        "201":
+          description: Provider created successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Message"
+        "400":
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /master-admin/providers/{id}:
+    put:
+      tags:
+        - Master Admin - Providers
+      summary: Update provider
+      description: Update an existing insurance provider
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/InsuranceProvider"
+      responses:
+        "200":
+          description: Provider updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Message"
+        "400":
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+    delete:
+      tags:
+        - Master Admin - Providers
+      summary: Delete provider
+      description: "Delete an insurance provider"
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Provider deleted successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Message"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  # Master Admin - Provider Access Management
+  /master-admin/provider-access:
+    post:
+      tags:
+        - Master Admin - Provider Access
+      summary: Grant provider access
+      description: Grant an agency access to an insurance provider
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AgencyProviderAccess"
+      responses:
+        "201":
+          description: Provider access granted successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Message"
+        "400":
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+    delete:
+      tags:
+        - Master Admin - Provider Access
+      summary: Revoke provider access
+      description: Revoke an agency's access to an insurance provider
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AgencyProviderAccess"
+      responses:
+        "200":
+          description: Provider access revoked successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Message"
+        "400":
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  # Master Admin - User Management
+  /master-admin/users:
+    get:
+      tags:
+        - Master Admin - Users
+      summary: Get all users
+      description: Retrieve a list of all users
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: List of users
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/User"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+    post:
+      tags:
+        - Master Admin - Users
+      summary: Create new user
+      description: Create a new user
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/User"
+      responses:
+        "201":
+          description: User created successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Message"
+        "400":
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /master-admin/users/{id}:
+    put:
+      tags:
+        - Master Admin - Users
+      summary: Update user
+      description: Update an existing user
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/User"
+      responses:
+        "200":
+          description: User updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Message"
+        "400":
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+    delete:
+      tags:
+        - Master Admin - Users
+      summary: Delete user
+      description: Delete a user
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: User deleted successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Message"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  # Master Admin - Reports
+  /master-admin/reports/quotes:
+    get:
+      tags:
+        - Master Admin - Reports
+      summary: Get quotes report
+      description: Retrieve quotes report data
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: Quotes report data
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Quote"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /master-admin/reports/policies:
+    get:
+      tags:
+        - Master Admin - Reports
+      summary: Get policies report
+      description: Retrieve policies report data
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: Policies report data
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Policy"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  # Master Admin - Authentication
+  /master-admin/auth/logout:
+    post:
+      tags:
+        - Master Admin - Authentication
+      summary: Logout user
+      description: Logout the authenticated user
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: Logout successful
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Message"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  # Agency Admin - Locations
+  /agency-admin/locations:
+    get:
+      tags:
+        - Agency Admin - Locations
+      summary: Get agency locations
+      description: Retrieve all locations for the current agency
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: List of agency locations
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/AgencyLocation"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+    post:
+      tags:
+        - Agency Admin - Locations
+      summary: Create new location
+      description: Create a new location for the current agency
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AgencyLocation"
+      responses:
+        "201":
+          description: Location created successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Message"
+        "400":
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /agency-admin/locations/{id}:
+    put:
+      tags:
+        - Agency Admin - Locations
+      summary: Update location
+      description: Update an existing location
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AgencyLocation"
+      responses:
+        "200":
+          description: Location updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Message"
+        "400":
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "404":
+          description: Location not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+    delete:
+      tags:
+        - Agency Admin - Locations
+      summary: Delete location
+      description: Delete a location
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Location deleted successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Message"
+        "404":
+          description: Location not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  # Agency Admin - Agents
+  /agency-admin/agents:
+    get:
+      tags:
+        - Agency Admin - Agents
+      summary: Get agency agents
+      description: Retrieve all agents within the current agency
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: List of agency agents
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/User"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+    post:
+      tags:
+        - Agency Admin - Agents
+      summary: Create new agent
+      description: Create a new agent within the current agency
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/User"
+      responses:
+        "201":
+          description: Agent created successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Message"
+        "400":
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /agency-admin/agents/{id}:
+    put:
+      tags:
+        - Agency Admin - Agents
+      summary: Update agent
+      description: Update an existing agent
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/User"
+      responses:
+        "200":
+          description: Agent updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Message"
+        "400":
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "404":
+          description: Agent not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+    delete:
+      tags:
+        - Agency Admin - Agents
+      summary: Delete agent
+      description: Delete an agent
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Agent deleted successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Message"
+        "404":
+          description: Agent not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  # Agency Admin - Users
+  /agency-admin/users:
+    get:
+      tags:
+        - Agency Admin - Users
+      summary: Get agency users
+      description: Retrieve all users (LocationAdmins and Agents) within the current agency
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: List of agency users
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/User"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+    post:
+      tags:
+        - Agency Admin - Users
+      summary: Create new agency user
+      description: Create a new LocationAdmin or Agent within the current agency
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/User"
+      responses:
+        "201":
+          description: User created successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Message"
+        "400":
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /agency-admin/users/{id}:
+    put:
+      tags:
+        - Agency Admin - Users
+      summary: Update agency user
+      description: Update an existing user within the current agency
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/User"
+      responses:
+        "200":
+          description: User updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Message"
+        "400":
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "404":
+          description: User not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  # Agency Admin - Providers
+  /agency-admin/providers:
+    get:
+      tags:
+        - Agency Admin - Providers
+      summary: Get accessible providers
+      description: Retrieve all accessible providers for the current agency
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: List of accessible providers
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/InsuranceProvider"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  # Agency Admin - Reports
+  /agency-admin/reports/quotes:
+    get:
+      tags:
+        - Agency Admin - Reports
+      summary: Get agency quotes report
+      description: Retrieve quotes report for the current agency
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: Agency quotes report
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/QuotesReport"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /agency-admin/reports/policies:
+    get:
+      tags:
+        - Agency Admin - Reports
+      summary: Get agency policies report
+      description: Retrieve policies report for the current agency
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: Agency policies report
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PoliciesReport"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  # Agency Admin - Authentication
+  /agency-admin/auth/logout:
+    post:
+      tags:
+        - Agency Admin - Authentication
+      summary: Logout user
+      description: Logout the authenticated user
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: Logout successful
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Message"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  # Agent - Customers
+  /agent/customers:
+    get:
+      tags:
+        - Agent - Customers
+      summary: Get customers
+      description: Retrieve all customers for the current agent's agency
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: List of customers
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/User"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+    post:
+      tags:
+        - Agent - Customers
+      summary: Create new customer
+      description: Create a new customer for the current agent's agency
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/User"
+      responses:
+        "201":
+          description: Customer created successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Message"
+        "400":
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /agent/customers/{id}:
+    put:
+      tags:
+        - Agent - Customers
+      summary: Update customer
+      description: Update an existing customer
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/User"
+      responses:
+        "200":
+          description: Customer updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Message"
+        "400":
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "404":
+          description: Customer not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+    delete:
+      tags:
+        - Agent - Customers
+      summary: Delete customer
+      description: Delete a customer
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Customer deleted successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Message"
+        "404":
+          description: Customer not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  # Agent - Vehicles
+  /agent/vehicles:
+    get:
+      tags:
+        - Agent - Vehicles
+      summary: Get vehicles
+      description: Retrieve vehicles for customers (optionally filtered by customer_id query parameter)
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: customer_id
+          in: query
+          required: false
+          schema:
+            type: integer
+          description: Filter vehicles by customer ID
+      responses:
+        "200":
+          description: List of vehicles
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Vehicle"
+        "403":
+          description: Access denied
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+    post:
+      tags:
+        - Agent - Vehicles
+      summary: Create new vehicle
+      description: Create a new vehicle for a customer
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Vehicle"
+      responses:
+        "201":
+          description: Vehicle created successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Message"
+        "400":
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "403":
+          description: Access denied
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /agent/vehicles/{id}:
+    put:
+      tags:
+        - Agent - Vehicles
+      summary: Update vehicle
+      description: Update an existing vehicle
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Vehicle"
+      responses:
+        "200":
+          description: Vehicle updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Message"
+        "400":
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "404":
+          description: Vehicle not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  # Agent - Drivers
+  /agent/drivers:
+    post:
+      tags:
+        - Agent - Drivers
+      summary: Assign driver to vehicle
+      description: Assign a driver to a vehicle
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/VehicleDriver"
+      responses:
+        "201":
+          description: Driver assigned successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Message"
+        "400":
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "403":
+          description: Access denied
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  # Agent - History
+  /agent/driving-history:
+    post:
+      tags:
+        - Agent - History
+      summary: Add driving history
+      description: Add driving history record for a user
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DrivingHistory"
+      responses:
+        "201":
+          description: Driving history added successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Message"
+        "400":
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "403":
+          description: Access denied
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /agent/insurance-history:
+    post:
+      tags:
+        - Agent - History
+      summary: Add insurance history
+      description: Add insurance history record for a user
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/InsuranceHistory"
+      responses:
+        "201":
+          description: Insurance history added successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Message"
+        "400":
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "403":
+          description: Access denied
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  # Agent - Quotes
+  /agent/quotes:
+    get:
+      tags:
+        - Agent - Quotes
+      summary: Get agent quotes
+      description: Retrieve all quotes for the current agent
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: List of quotes
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Quote"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+    post:
+      tags:
+        - Agent - Quotes
+      summary: Create new quote
+      description: Create a new quote for a customer
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Quote"
+      responses:
+        "201":
+          description: Quote created successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Message"
+        "400":
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "403":
+          description: Access denied
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /agent/quotes/{id}:
+    put:
+      tags:
+        - Agent - Quotes
+      summary: Update quote
+      description: Update an existing quote (mainly status changes)
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Quote"
+      responses:
+        "200":
+          description: Quote updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Message"
+        "400":
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "404":
+          description: Quote not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  # Agent - Quote Line Items
+  /agent/quote-line-items:
+    post:
+      tags:
+        - Agent - Quotes
+      summary: Add quote line item
+      description: Add a coverage line item to a quote
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/QuoteLineItem"
+      responses:
+        "201":
+          description: Quote line item added successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Message"
+        "400":
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "403":
+          description: Access denied
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  # Agent - Coverages
+  /agent/coverages:
+    get:
+      tags:
+        - Agent - Coverages
+      summary: Get available coverages
+      description: Retrieve all available insurance coverages
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: List of available coverages
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Coverage"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  # Agent - Providers
+  /agent/providers:
+    get:
+      tags:
+        - Agent - Providers
+      summary: Get accessible providers
+      description: Retrieve all accessible providers for the current agent's agency
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: List of accessible providers
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/InsuranceProvider"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  # Agent - Policies
+  /agent/policies:
+    get:
+      tags:
+        - Agent - Policies
+      summary: Get policies
+      description: Retrieve all policies for customers in the current agent's agency
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: List of policies
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Policy"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+    post:
+      tags:
+        - Agent - Policies
+      summary: Bind policy
+      description: Bind a quote to create a policy
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Policy"
+      responses:
+        "201":
+          description: Policy bound successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  policy_number:
+                    type: string
+        "400":
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "403":
+          description: Access denied
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  # Agent - Reports
+  /agent/reports:
+    get:
+      tags:
+        - Agent - Reports
+      summary: Get agent report
+      description: Generate agent-specific performance reports
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: Agent performance report
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AgentReport"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  # Agent - Authentication
+  /agent/auth/logout:
+    post:
+      tags:
+        - Agent - Authentication
+      summary: Logout user
+      description: Logout the authenticated user
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: Logout successful
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Message"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+tags:
+  - name: Authentication
+    description: User authentication and password management
+  - name: Master Admin - Agencies
+    description: Agency management operations (Master Admin only)
+  - name: Master Admin - Providers
+    description: Insurance provider management operations (Master Admin only)
+  - name: Master Admin - Provider Access
+    description: Provider access management operations (Master Admin only)
+  - name: Master Admin - Users
+    description: User management operations (Master Admin only)
+  - name: Master Admin - Reports
+    description: Reporting operations (Master Admin only)
+  - name: Master Admin - Authentication
+    description: Master admin authentication operations
+  - name: Agency Admin - Locations
+    description: Location management operations (Agency Admin only)
+  - name: Agency Admin - Agents
+    description: Agent management operations (Agency Admin only)
+  - name: Agency Admin - Users
+    description: User management operations within agency (Agency Admin only)
+  - name: Agency Admin - Providers
+    description: Provider access viewing (Agency Admin only)
+  - name: Agency Admin - Reports
+    description: Agency-level reporting operations (Agency Admin only)
+  - name: Agency Admin - Authentication
+    description: Agency admin authentication operations
+  - name: Agent - Customers
+    description: Customer management operations (Agent only)
+  - name: Agent - Vehicles
+    description: Vehicle management operations (Agent only)
+  - name: Agent - Drivers
+    description: Driver assignment operations (Agent only)
+  - name: Agent - History
+    description: Driving and insurance history management (Agent only)
+  - name: Agent - Quotes
+    description: Quote management operations (Agent only)
+  - name: Agent - Coverages
+    description: Coverage information access (Agent only)
+  - name: Agent - Providers
+    description: Provider information access (Agent only)
+  - name: Agent - Policies
+    description: Policy management operations (Agent only)
+  - name: Agent - Reports
+    description: Agent performance reporting (Agent only)
+  - name: Agent - Authentication
+    description: Agent authentication operations

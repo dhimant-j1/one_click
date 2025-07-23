@@ -1,0 +1,28 @@
+meta {
+  name: Update provider
+  type: http
+  seq: 3
+}
+
+put {
+  url: {{baseUrl}}/master-admin/providers/:id
+  body: json
+  auth: bearer
+}
+
+params:path {
+  id: 
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+body:json {
+  {
+    "provider_id": 0,
+    "provider_name": "",
+    "contact_info": "",
+    "additional_data": ""
+  }
+}

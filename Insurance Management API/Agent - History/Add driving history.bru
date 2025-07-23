@@ -1,0 +1,28 @@
+meta {
+  name: Add driving history
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/agent/driving-history
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+body:json {
+  {
+    "history_id": 0,
+    "user_id": 0,
+    "incident_type": "",
+    "incident_date": "",
+    "conviction_date": "",
+    "amount": "",
+    "description": "",
+    "additional_data": ""
+  }
+}

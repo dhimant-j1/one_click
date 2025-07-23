@@ -1,0 +1,22 @@
+meta {
+  name: Revoke provider access
+  type: http
+  seq: 2
+}
+
+delete {
+  url: {{baseUrl}}/master-admin/provider-access
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+body:json {
+  {
+    "agency_id": 0,
+    "provider_id": 0
+  }
+}

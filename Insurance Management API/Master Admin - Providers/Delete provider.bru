@@ -1,0 +1,19 @@
+meta {
+  name: Delete provider
+  type: http
+  seq: 4
+}
+
+delete {
+  url: {{baseUrl}}/master-admin/providers/:id
+  body: none
+  auth: bearer
+}
+
+params:path {
+  id: 
+}
+
+auth:bearer {
+  token: {{token}}
+}

@@ -1,0 +1,31 @@
+meta {
+  name: Assign driver to vehicle
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/agent/drivers
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+body:json {
+  {
+    "vehicle_id": 0,
+    "user_id": 0,
+    "driver_type": "",
+    "relationship_to_insured": "",
+    "gender": "",
+    "marital_status": "",
+    "licensing_exception": "",
+    "needs_financial_responsibility_filing": false,
+    "has_uncompensated_impairment": false,
+    "mobile_number": "",
+    "additional_data": ""
+  }
+}

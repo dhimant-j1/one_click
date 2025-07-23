@@ -1,0 +1,20 @@
+meta {
+  name: Create new agency
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/master-admin/agencies
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "agency_id": 0,
+    "agency_name": "Bharat",
+    "agent_code": "0",
+    "additional_data": "{}"
+  }
+}

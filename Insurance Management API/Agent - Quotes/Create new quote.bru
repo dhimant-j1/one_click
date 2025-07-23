@@ -1,0 +1,27 @@
+meta {
+  name: Create new quote
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/agent/quotes
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+body:json {
+  {
+    "quote_id": 0,
+    "agent_id": 0,
+    "customer_id": 0,
+    "vehicle_id": 0,
+    "quote_date": "",
+    "status": "",
+    "additional_data": ""
+  }
+}

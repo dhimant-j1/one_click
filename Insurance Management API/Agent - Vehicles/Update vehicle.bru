@@ -1,0 +1,46 @@
+meta {
+  name: Update vehicle
+  type: http
+  seq: 3
+}
+
+put {
+  url: {{baseUrl}}/agent/vehicles/:id
+  body: json
+  auth: bearer
+}
+
+params:path {
+  id: 
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+body:json {
+  {
+    "vehicle_id": 0,
+    "customer_id": 0,
+    "vin": "",
+    "make": "",
+    "model": "",
+    "year": 0,
+    "type": "",
+    "plate_number": "",
+    "plate_type": "",
+    "body_style": "",
+    "vehicle_use": "",
+    "vehicle_history": "",
+    "annual_mileage": 0,
+    "current_odometer_reading": 0,
+    "odometer_reading_date": "",
+    "purchased_in_last_90_days": false,
+    "length_of_ownership": "",
+    "ownership_status": "",
+    "has_racing_equipment": false,
+    "has_existing_damage": false,
+    "cost_new": "",
+    "additional_data": ""
+  }
+}

@@ -1,0 +1,196 @@
+erDiagram
+    Users {
+        int UserID PK
+        string FirstName
+        string LastName
+        string Email UK "Unique identifier for login"
+        string PasswordHash
+        enum Role "'MasterAdmin', 'AgencyAdmin', 'LocationAdmin', 'Agent', 'Customer'"
+        int AgencyID FK "Nullable, references Agencies"
+        int LocationID FK "Nullable, references AgencyLocations"
+        string Address "Nullable"
+        string LicenseNumber "Nullable"
+        string LicenseState "Nullable"
+        date DateOfBirth "Nullable"
+        string MobileNumber "Nullable"
+        boolean HasPhysicalImpairment "Nullable"
+        boolean NeedsFinancialFiling "Nullable"
+        json AdditionalData "For future extensible fields"
+    }
+
+    UserSessions {
+        int SessionID PK
+        int UserID FK
+        string SessionToken UK
+        datetime ExpiresAt
+        datetime CreatedAt
+        string IPAddress
+        string UserAgent
+    }
+
+    PasswordResetTokens {
+        int TokenID PK
+        int UserID FK
+        string ResetToken UK
+        datetime ExpiresAt
+        boolean IsUsed
+    }
+
+    Agencies {
+        int AgencyID PK
+        string AgencyName
+        string AgentCode "Nullable"
+        json AdditionalData "For future extensible fields"
+    }
+
+    AgencyLocations {
+        int LocationID PK
+        int AgencyID FK
+        string Address
+        json AdditionalData "For future extensible fields"
+    }
+
+    InsuranceProviders {
+        int ProviderID PK
+        string ProviderName
+        string ContactInfo
+        json AdditionalData "For future extensible fields"
+    }
+
+    AgencyProviderAccess {
+        int AgencyID PK, FK
+        int ProviderID PK, FK
+    }
+
+    Vehicles {
+        int VehicleID PK
+        int CustomerID FK "UserID of vehicle owner"
+        string VIN
+        string Make
+        string Model
+        int Year
+        string Type "e.g., 'Private Passenger', 'Pickup', 'Boat', 'Horse Trailer', 'Utility Trailer', 'Motor Home', 'Camper Trailer', 'Antique'"
+        string PlateNumber "Nullable"
+        string PlateType "Nullable"
+        string BodyStyle "Nullable"
+        string VehicleUse "e.g., 'Commute', 'Pleasure', 'Business'"
+        string VehicleHistory "Nullable"
+        int AnnualMileage "Nullable"
+        int CurrentOdometerReading "Nullable"
+        date OdometerReadingDate "Nullable"
+        boolean PurchasedInLast90Days "Nullable"
+        string LengthOfOwnership "Nullable"
+        string OwnershipStatus "e.g., 'Own - Make Payment', 'Own - No Payment', 'Lease'"
+        boolean HasRacingEquipment "Nullable"
+        boolean HasExistingDamage "Nullable"
+        decimal CostNew "Nullable"
+        json AdditionalData "For future extensible fields"
+    }
+
+    VehicleDrivers {
+        int VehicleID PK, FK
+        int UserID PK, FK "Driver's UserID"
+        string DriverType "e.g., 'Licensed Driver', 'Insured Elsewhere', 'Excluded', 'Unlicensed Household Resident'"
+        string RelationshipToInsured "e.g., 'Self', 'Spouse', 'Child'"
+        string Gender "M/F/X"
+        string MaritalStatus
+        string LicensingException "Nullable"
+        boolean NeedsFinancialResponsibilityFiling "Nullable"
+        boolean HasUncompensatedImpairment "Nullable"
+        string MobileNumber "Nullable"
+        json AdditionalData "For future extensible fields"
+    }
+
+    DrivingHistory {
+        int HistoryID PK
+        int UserID FK "Driver's UserID"
+        string IncidentType
+        date IncidentDate
+        date ConvictionDate "Nullable"
+        decimal Amount "Nullable"
+        string Description
+        json AdditionalData "For future extensible fields"
+    }
+
+    InsuranceHistory {
+        int HistoryID PK
+        int UserID FK "Customer or Driver's UserID"
+        string InsuranceStatus "Nullable"
+        string CurrentCarrier "Nullable"
+        string CurrentBodilyInjuryLimits "Nullable"
+        string LengthWithCurrentCompany "Nullable"
+        boolean ContinuousInsurance "Nullable"
+        boolean VehicleRegisteredToOther "Nullable"
+        boolean DriverWithoutLicense "Nullable"
+        boolean LicenseSuspendedRevoked "Nullable"
+        boolean DeclinedCancelledNonRenewed "Nullable"
+        boolean MilitaryDeployment "Nullable"
+        string PrimaryResidence "Nullable"
+        json AdditionalData "For future extensible fields"
+    }
+
+    Coverages {
+        int CoverageID PK
+        string CoverageName "e.g., 'Bodily Injury', 'Personal Injury Protection', etc."
+        string Description
+        json AdditionalData "For future extensible fields"
+    }
+
+    Quotes {
+        int QuoteID PK
+        int AgentID FK "UserID of Agent"
+        int CustomerID FK "UserID of Customer"
+        int VehicleID FK "Nullable"
+        datetime QuoteDate
+        enum Status "'Draft', 'Presented', 'Bound'"
+        json AdditionalData "For future extensible fields"
+    }
+
+    QuoteLineItems {
+        int LineItemID PK
+        int QuoteID FK
+        int ProviderID FK
+        int CoverageID FK
+        decimal Price
+        string LimitAmount
+        string DeductibleAmount
+        json AdditionalData "For future extensible fields"
+    }
+
+    Policies {
+        int PolicyID PK
+        int CustomerID FK
+        int ProviderID FK
+        int QuoteID FK "Nullable, if bound from quote"
+        string PolicyNumber
+        date EffectiveDate
+        date ExpirationDate
+        enum Status "'Active', 'Expired', 'Cancelled'"
+        json AdditionalData "For future extensible fields"
+    }
+
+    %% --- Relationships ---
+
+    Users }|--|| Agencies : "Works For"
+    Users }|--|| AgencyLocations : "Works At"
+    AgencyLocations }|--|| Agencies : "Belongs To"
+    Users ||--o{ Vehicles : "Owns"
+    Agencies ||--|{ AgencyProviderAccess : "Has Access To"
+    InsuranceProviders ||--|{ AgencyProviderAccess : "Is Available To"
+    Users }o--|| Quotes : "Creates (Agent)"
+    Users }|--o{ Quotes : "Receives (Customer)"
+    Vehicles }|--o{ Quotes : "Is Quoted For"
+    Vehicles ||--|{ VehicleDrivers : "Is Driven By"
+    Users }|--o{ VehicleDrivers : "Drives"
+    Users }|--o{ DrivingHistory : "Has (Driver)"
+    Users }|--o{ InsuranceHistory : "Has"
+    Quotes ||--|{ QuoteLineItems : "Comprises"
+    InsuranceProviders }o--|| QuoteLineItems : "Provides"
+    Coverages }o--|| QuoteLineItems : "Details"
+    Users }|--o{ Policies : "Holds"
+    InsuranceProviders }o--|| Policies : "Issues"
+    Quotes ||--o{ Policies : "Binds To"
+
+    %% --- Authentication Relationships ---
+    Users ||--|{ UserSessions : "Maintains"
+    Users ||--o{ PasswordResetTokens : "Requests"

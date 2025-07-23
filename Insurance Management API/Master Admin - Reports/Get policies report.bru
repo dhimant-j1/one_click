@@ -1,0 +1,15 @@
+meta {
+  name: Get policies report
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{baseUrl}}/master-admin/reports/policies
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}

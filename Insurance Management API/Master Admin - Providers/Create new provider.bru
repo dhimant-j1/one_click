@@ -1,0 +1,20 @@
+meta {
+  name: Create new provider
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/master-admin/providers
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "provider_id": 0,
+    "provider_name": "Test",
+    "contact_info": "7878458127",
+    "additional_data": "{}"
+  }
+}

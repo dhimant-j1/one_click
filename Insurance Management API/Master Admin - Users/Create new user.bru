@@ -1,0 +1,36 @@
+meta {
+  name: Create new user
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/master-admin/users
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+body:json {
+  {
+    "user_id": 0,
+    "first_name": "Bharat",
+    "last_name": "Makwana",
+    "email": "bharatmk257@gmail.com",
+    "password_hash": "bharatmk257",
+    "role": "AgencyAdmin",
+    "agency_id": 0,
+    "location_id": 0,
+    "address": "",
+    "license_number": "",
+    "license_state": "",
+    "date_of_birth": "",
+    "mobile_number": "",
+    "has_physical_impairment": false,
+    "needs_financial_filing": false,
+    "additional_data": ""
+  }
+}

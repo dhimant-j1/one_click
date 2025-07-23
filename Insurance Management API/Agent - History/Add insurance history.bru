@@ -1,0 +1,34 @@
+meta {
+  name: Add insurance history
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/agent/insurance-history
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+body:json {
+  {
+    "history_id": 0,
+    "user_id": 0,
+    "insurance_status": "",
+    "current_carrier": "",
+    "current_bodily_injury_limits": "",
+    "length_with_current_company": "",
+    "continuous_insurance": false,
+    "vehicle_registered_to_other": false,
+    "driver_without_license": false,
+    "license_suspended_revoked": false,
+    "declined_cancelled_non_renewed": false,
+    "military_deployment": false,
+    "primary_residence": "",
+    "additional_data": ""
+  }
+}

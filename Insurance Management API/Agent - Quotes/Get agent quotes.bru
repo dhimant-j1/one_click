@@ -1,0 +1,15 @@
+meta {
+  name: Get agent quotes
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/agent/quotes
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}

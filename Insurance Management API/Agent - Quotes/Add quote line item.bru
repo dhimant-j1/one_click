@@ -1,0 +1,28 @@
+meta {
+  name: Add quote line item
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{baseUrl}}/agent/quote-line-items
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+body:json {
+  {
+    "line_item_id": 0,
+    "quote_id": 0,
+    "provider_id": 0,
+    "coverage_id": 0,
+    "price": "",
+    "limit_amount": "",
+    "deductible_amount": "",
+    "additional_data": ""
+  }
+}
