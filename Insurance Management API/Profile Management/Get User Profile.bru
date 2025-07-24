@@ -1,0 +1,32 @@
+meta {
+  name: Get User Profile
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{base_url}}/api/profile/user/{{user_id}}
+  body: none
+  auth: none
+}
+
+headers {
+  Authorization: Bearer {{auth_token}}
+  Content-Type: application/json
+}
+
+vars {
+  user_id: 2
+}
+
+docs {
+  Get the profile of a specific user by ID.
+  
+  Access Control:
+  - Master Admin: Can view any user's profile
+  - Agency Admin: Can view profiles of Agent, AgencyAdmin, LocationAdmin, and Customer within their agency
+  - Agent: Can view profiles of Customer and other Agents within their agency
+  - All users: Can view their own profile
+  
+  Replace {{user_id}} with the target user's ID.
+}

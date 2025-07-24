@@ -1,0 +1,26 @@
+meta {
+  name: Get Agency Customers Profiles
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{base_url}}/api/agency-admin/profiles/users?role=Customer
+  body: none
+  auth: none
+}
+
+headers {
+  Authorization: Bearer {{auth_token}}
+  Content-Type: application/json
+}
+
+params:query {
+  role: Customer
+}
+
+docs {
+  Agency Admin: Get Customer profiles within their agency.
+  
+  This endpoint allows Agency Admins to view profiles of Customers within their own agency only.
+}

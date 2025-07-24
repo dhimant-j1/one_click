@@ -394,8 +394,8 @@ func Login(db *sql.DB) gin.HandlerFunc {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create session"})
 			return
 		}
-
-		c.JSON(http.StatusOK, gin.H{"token": token})
+		user.PasswordHash = ""
+		c.JSON(http.StatusOK, gin.H{"token": token, "profile": user})
 	}
 }
 

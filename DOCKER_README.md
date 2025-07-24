@@ -172,6 +172,21 @@ Once running, you can test the API endpoints:
 
 ```bash
 POST http://localhost:8081/api/auth/login
+POST http://localhost:8081/api/auth/reset-password
+PUT http://localhost:8081/api/auth/reset-password/:token
+```
+
+### Profile Management (All Roles)
+
+```bash
+# Get current user's profile
+GET http://localhost:8081/api/profile/me
+
+# Get specific user's profile (role-based access)
+GET http://localhost:8081/api/profile/user/:id
+
+# Get users by role (role-based access)
+GET http://localhost:8081/api/profile/users?role=Agent
 ```
 
 ### Master Admin Endpoints
@@ -179,7 +194,54 @@ POST http://localhost:8081/api/auth/login
 ```bash
 GET http://localhost:8081/api/master-admin/agencies
 GET http://localhost:8081/api/master-admin/providers
+# Profile management
+GET http://localhost:8081/api/master-admin/profiles/users?role=Agent
+GET http://localhost:8081/api/master-admin/profiles/user/:id
 ```
+
+### Agency Admin Endpoints
+
+```bash
+GET http://localhost:8081/api/agency-admin/locations
+GET http://localhost:8081/api/agency-admin/agents
+# Profile management (agency-scoped)
+GET http://localhost:8081/api/agency-admin/profiles/users?role=Agent
+GET http://localhost:8081/api/agency-admin/profiles/user/:id
+```
+
+### Agent Endpoints
+
+```bash
+GET http://localhost:8081/api/agent/customers
+GET http://localhost:8081/api/agent/quotes
+# Profile management (agency-scoped)
+GET http://localhost:8081/api/agent/profiles/users?role=Customer
+GET http://localhost:8081/api/agent/profiles/user/:id
+```
+
+### Profile API Access Control
+
+**Master Admin:**
+
+- Can view profiles of all users (MasterAdmin, AgencyAdmin, LocationAdmin, Agent, Customer)
+- Has access to all profile endpoints
+
+**Agency Admin:**
+
+- Can view profiles of Agent, AgencyAdmin, LocationAdmin, and Customer within their agency
+- Cannot view MasterAdmin profiles or users from other agencies
+
+**Agent:**
+
+- Can view profiles of Customer and other Agents within their agency
+- Cannot view admin profiles or users from other agencies
+
+**All Users:**
+
+- Can always view their own profile using `/api/profile/me`
+  GET http://localhost:8081/api/master-admin/providers
+
+````
 
 ### Database Access
 
@@ -187,7 +249,7 @@ If you need direct database access:
 
 ```bash
 docker exec -it insurance_db psql -U postgres -d insurance
-```
+````
 
 ## Troubleshooting
 

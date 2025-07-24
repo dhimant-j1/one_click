@@ -1,0 +1,29 @@
+meta {
+  name: Get My Profile
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{base_url}}/api/profile/me
+  body: none
+  auth: none
+}
+
+headers {
+  Authorization: Bearer {{auth_token}}
+  Content-Type: application/json
+}
+
+docs {
+  Get the profile of the currently logged-in user.
+  
+  This endpoint is available to all authenticated users and returns their own profile information.
+  
+  Response includes:
+  - User basic information (name, email, role)
+  - Agency/Location associations
+  - License information
+  - Contact details
+  - Additional metadata
+}

@@ -44,6 +44,9 @@ func main() {
 		masterAdmin.GET("/reports/quotes", handlers.GetQuotesReport(db))
 		masterAdmin.GET("/reports/policies", handlers.GetPoliciesReport(db))
 		masterAdmin.POST("/auth/logout", handlers.Logout(db))
+		// Profile management for master admin
+		masterAdmin.GET("/profiles/users", handlers.GetUsersByRole(db))
+		masterAdmin.GET("/profiles/user/:id", handlers.GetUserProfile(db))
 	}
 
 	// Auth routes
@@ -52,6 +55,18 @@ func main() {
 		auth.POST("/login", handlers.Login(db))
 		auth.POST("/reset-password", handlers.ResetPassword(db))
 		auth.PUT("/reset-password/:token", handlers.UpdatePassword(db))
+	}
+
+	// Profile routes (requires authentication)
+	profile := router.Group("/api/profile")
+	profile.Use(middleware.AuthMiddleware())
+	{
+		// Get current user's profile
+		profile.GET("/me", handlers.GetMyProfile(db))
+		// Get specific user's profile (with role-based access control)
+		profile.GET("/user/:id", handlers.GetUserProfile(db))
+		// Get users by role (with role-based access control)
+		profile.GET("/users", handlers.GetUsersByRole(db))
 	}
 
 	// Agency Admin routes
@@ -74,6 +89,9 @@ func main() {
 		agencyAdmin.GET("/reports/quotes", handlers.GetAgencyQuotesReport(db))
 		agencyAdmin.GET("/reports/policies", handlers.GetAgencyPoliciesReport(db))
 		agencyAdmin.POST("/auth/logout", handlers.Logout(db))
+		// Profile management for agency admin
+		agencyAdmin.GET("/profiles/users", handlers.GetUsersByRole(db))
+		agencyAdmin.GET("/profiles/user/:id", handlers.GetUserProfile(db))
 	}
 
 	// Agent routes
@@ -101,6 +119,9 @@ func main() {
 		agent.GET("/policies", handlers.GetPolicies(db))
 		agent.GET("/reports", handlers.GetAgentReport(db))
 		agent.POST("/auth/logout", handlers.Logout(db))
+		// Profile management for agent
+		agent.GET("/profiles/users", handlers.GetUsersByRole(db))
+		agent.GET("/profiles/user/:id", handlers.GetUserProfile(db))
 	}
 
 	// Start the server

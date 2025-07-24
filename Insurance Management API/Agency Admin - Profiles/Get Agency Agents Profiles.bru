@@ -1,0 +1,26 @@
+meta {
+  name: Get Agency Agents Profiles
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{base_url}}/api/agency-admin/profiles/users?role=Agent
+  body: none
+  auth: none
+}
+
+headers {
+  Authorization: Bearer {{auth_token}}
+  Content-Type: application/json
+}
+
+params:query {
+  role: Agent
+}
+
+docs {
+  Agency Admin: Get Agent profiles within their agency.
+  
+  This endpoint allows Agency Admins to view profiles of Agents within their own agency only.
+}

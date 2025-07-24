@@ -1,0 +1,26 @@
+meta {
+  name: Get All Agents Profiles
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{base_url}}/api/master-admin/profiles/users?role=Agent
+  body: none
+  auth: none
+}
+
+headers {
+  Authorization: Bearer {{auth_token}}
+  Content-Type: application/json
+}
+
+params:query {
+  role: Agent
+}
+
+docs {
+  Master Admin: Get all Agent profiles across all agencies.
+  
+  This endpoint allows Master Admins to view profiles of all Agents in the system, regardless of agency.
+}

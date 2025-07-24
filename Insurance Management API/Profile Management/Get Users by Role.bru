@@ -1,0 +1,42 @@
+meta {
+  name: Get Users by Role
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{base_url}}/api/profile/users?role={{target_role}}
+  body: none
+  auth: none
+}
+
+headers {
+  Authorization: Bearer {{auth_token}}
+  Content-Type: application/json
+}
+
+params:query {
+  role: {{target_role}}
+}
+
+vars {
+  target_role: Agent
+}
+
+docs {
+  Get users filtered by role with role-based access control.
+  
+  Available Roles:
+  - MasterAdmin
+  - AgencyAdmin
+  - LocationAdmin
+  - Agent
+  - Customer
+  
+  Access Control:
+  - Master Admin: Can view all roles
+  - Agency Admin: Can view Agent, AgencyAdmin, LocationAdmin, Customer
+  - Agent: Can view Customer, Agent
+  
+  Agency/Location scoping applies automatically based on the requesting user's context.
+}
